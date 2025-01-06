@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Database, QueryExecResult } from "sql.js";
-// import Acknowledgments from "./Acknowledgments";
+import Editor from '@monaco-editor/react';
 
 interface SqlQueryToolProps {
   db: Database;
@@ -28,49 +28,31 @@ function SqlQueryTool(props: SqlQueryToolProps) {
     }
   }, [db, query]);
 
-  const copyToTextarea = useCallback(
-    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      setQuery(event.currentTarget.textContent ?? "");
-    },
-    []
-  );
 
   return (
-    <div className="flex flex-col items-center p-4">
-      <h1 className="text-2xl font-semibold mb-4">SQL Query Tool</h1>
-      <div className="mb-2">
-        <p className="text-gray-600 text-sm mb-1">
-          Example queries you can try:
-        </p>
-        <div
-          className="cursor-pointer text-gray-600 text-sm hover:bg-gray-100 px-2 py-1 rounded transition duration-300 ease-in-out mt-1"
-          onClick={(e) => copyToTextarea(e)}
-        >
-          PRAGMA table_list;
+    <div className="grid grid-cols-2 w-full">
+      <div className="flex flex-col gap-2 justify-start items-start">
+        <h1 className="text-2xl font-semibold mb-4 text-left">SQL Query</h1>
+        <div className="w-full mb-4">
+          <Editor
+            value={query}
+            onChange={(text) => setQuery(text!)}
+            width={800}
+            height="80vh"
+            defaultLanguage="sql"
+            defaultValue="// some comment" />
         </div>
-        <div
-          className="cursor-pointer text-gray-600 text-sm hover:bg-gray-100 px-2 py-1 rounded transition duration-300 ease-in-out mt-1"
-          onClick={(e) => copyToTextarea(e)}
+        {error.length > 0 && <div className=" text-red-600">{error}</div>}
+        <button
+          className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={executeQuery}
         >
-          SELECT * FROM Artist LIMIT 10;
-        </div>
+          Execute Query
+        </button>
+
       </div>
-      <div className="w-full mb-4">
-        <textarea
-          name="sqlQuery"
-          className="w-full h-20 p-2 border rounded"
-          placeholder="Enter your SQL query here..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
-      <button
-        className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-600"
-        onClick={executeQuery}
-      >
-        Execute Query
-      </button>
-      {error.length > 0 && <div className=" text-red-600">{error}</div>}
+
+
       <div className="mt-4">
         {JSON.stringify(results, null, 2)}
       </div>

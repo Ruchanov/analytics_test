@@ -14,7 +14,7 @@ const DbConnection = () => {
     async function initializeDatabase() {
       try {
         const SQL = await initSqlJs({ locateFile: () => sqliteUrl });
-        const response = await fetch("Chinook.db");
+        const response = await fetch("database.db");
         const buffer = await response.arrayBuffer();
         const data = new Uint8Array(buffer);
         const db = new SQL.Database(data);
