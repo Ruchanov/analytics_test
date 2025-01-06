@@ -1,50 +1,124 @@
-# React + TypeScript + Vite
+# Структура базы данных
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Этот документ описывает структуру базы данных для проекта.
 
-Currently, two official plugins are available:
+## Обзор таблиц
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. `Projects` (Проекты)
+Эта таблица содержит информацию о проектах.
 
-## Expanding the ESLint configuration
+| **Название столбца** | **Тип данных**   | **Описание**                        |
+|-----------------------|------------------|--------------------------------------|
+| `ID`                 | `SERIAL`        | Уникальный идентификатор (автоинкремент). |
+| `Name`               | `VARCHAR(255)`  | Название проекта.                   |
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+---
 
-- Configure the top-level `parserOptions` property like this:
+### 2. `Employees` (Сотрудники)
+Эта таблица содержит информацию о сотрудниках.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+| **Название столбца** | **Тип данных**   | **Описание**                        |
+|-----------------------|------------------|--------------------------------------|
+| `ID`                 | `SERIAL`        | Уникальный идентификатор (автоинкремент). |
+| `FirstName`          | `VARCHAR(100)`  | Имя сотрудника.                     |
+| `SecondName`         | `VARCHAR(100)`  | Отчество сотрудника (опционально).  |
+| `LastName`           | `VARCHAR(100)`  | Фамилия сотрудника.                 |
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+---
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### 3. `Documents` (Документы)
+Эта таблица содержит информацию о документах, связанных с проектами и сотрудниками.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+| **Название столбца** | **Тип данных**                     | **Описание**                        |
+|-----------------------|------------------------------------|--------------------------------------|
+| `ID`                 | `SERIAL`                          | Уникальный идентификатор (автоинкремент). |
+| `DateCreated`        | `DATE`                            | Дата создания документа.            |
+| `Type`               | `ENUM('Estimate', 'Contract')`    | Тип документа (Смета или Договор).  |
+| `ResponsibleEmployee`| `INT`                             | Внешний ключ, ссылающийся на `Employees(ID)`. |
+| `Project`            | `INT`                             | Внешний ключ, ссылающийся на `Projects(ID)`. |
+
+---
+
+# Задача
+
+# Тестовое задание
+
+## Часть 1: SQL-запрос
+
+Написать SQL-запрос для подсчёта конверсии по ответственным сотрудникам.
+
+### Условия:
+- **Количество смет:** определяется по количеству документов типа `Estimate`.
+- **Количество договоров:** определяется по количеству документов типа `Contract`.
+- **Конверсия:** отношение количества смет к количеству договоров.
+- **Группировка:** по сотрудникам и по месяцам.
+
+
+## Часть 2: Визуализация в React
+
+Место для вставки таблицы react-app/src/components/SqlQueryTool.tsx
+
+### Задачи:
+1. Реализовать взаимодействие с API, которое:
+    - Выполняет запрос данных с результатами SQL-запроса.
+    - Отображает эти данные в таблице с использованием React.
+
+2. Таблица должна включать:
+    - Название месяца.
+    - Имя и фамилию сотрудника.
+    - Количество документов типа `Estimate` и `Contract`.
+    - Значение конверсии в процентах.
+
+---
+
+### Требования к таблице:
+- **Столбцы:**
+    - Месяц.
+    - Сотрудник.
+    - Количество смет (`Estimate`).
+    - Количество договоров (`Contract`).
+    - Конверсия (%) = `(Количество смет / Количество договоров) * 100`.
+
+- **Интерфейс:**
+    - Допустимо использование библиотек, таких как **Ag-Grid**, **React Table** или аналогов.
+    - Стилизация с использованием CSS или библиотек, например, **Material-UI** или **Ant Design**.
+
+---
+
+### Пример таблицы:
+| **Месяц**   | **Сотрудник**    | **Estimate** | **Contract** | **Конверсия (%)** |
+|-------------|------------------|--------------|--------------|-------------------|
+| 2025-01     | Иван Иванов      | 10           | 5            | 200.00%          |
+| 2025-02     | Анна Смирнова    | 8            | 4            | 200.00%          |
+| 2025-03     | Александр Кузнецов | 6          | 3            | 200.00%          |
+
+---
+
+### Рекомендации:
+1. **API-запросы:**
+    - Используйте стандартные инструменты для работы с API, такие как `fetch` или библиотеку **axios**.
+    - Обрабатывайте ошибки API и выводите соответствующие сообщения.
+
+2. **Библиотеки для таблиц:**
+    - Используйте **Ag-Grid**, **React Table** или другие инструменты для отображения таблиц.
+
+3. **Стилизация:**
+    - Для более профессионального внешнего вида можно использовать **Material-UI**, **Ant Design** или TailwindCSS.
+
+4. **Реализация:**
+    - Структурируйте компоненты React, выделяя отдельные компоненты для:
+        - Таблицы данных.
+        - Обработки загрузки данных.
+        - Обработки ошибок.
+---
+
+### Финальный результат:
+1. **Видео:** Запишите демонстрацию работы приложения (например, скринкаст).
+2. **Ссылка на репозиторий:** Загрузите проект в репозиторий (например, GitHub или GitLab) 
+
+# Запуск проекта
+
+
+Установите зависимости с помощью команды `npm install`
+
+Запустите приложение с помощью команды `npm dev` 

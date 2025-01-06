@@ -8,7 +8,7 @@ interface SqlQueryToolProps {
 
 function SqlQueryTool(props: SqlQueryToolProps) {
   const { db } = props;
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("SELECT * from documents");
   const [error, setError] = useState<string>("");
   const [results, setResults] = useState<QueryExecResult[]>([]);
 
@@ -40,7 +40,7 @@ function SqlQueryTool(props: SqlQueryToolProps) {
             width={800}
             height="80vh"
             defaultLanguage="sql"
-            defaultValue="// some comment" />
+            />
         </div>
         {error.length > 0 && <div className=" text-red-600">{error}</div>}
         <button
@@ -54,9 +54,9 @@ function SqlQueryTool(props: SqlQueryToolProps) {
 
 
       <div className="mt-4">
+        {/* Место для отображения таблицы */}
         {JSON.stringify(results, null, 2)}
       </div>
-      {/*<Acknowledgments />*/}
     </div>
   );
 }
