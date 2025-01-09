@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { Database, QueryExecResult } from "sql.js";
 import Editor from '@monaco-editor/react';
+import DynamicTable from "./DynamicTable";
+import styles from "./SqlQueryTool.module.css"; 
 
 interface SqlQueryToolProps {
   db: Database;
@@ -8,7 +10,24 @@ interface SqlQueryToolProps {
 
 function SqlQueryTool(props: SqlQueryToolProps) {
   const { db } = props;
-  const [query, setQuery] = useState("SELECT * from documents");
+  const first_task = `SELECT 
+    strftime('%Y-%m', DateCreated) AS Month,
+    e.FirstName || ' ' || e.LastName AS Employee,
+    SUM(CASE WHEN Type = 'Estimate' THEN 1 ELSE 0 END) AS Estimate,
+    SUM(CASE WHEN Type = 'Contract' THEN 1 ELSE 0 END) AS Contract,
+    ROUND(
+        CASE 
+            WHEN SUM(CASE WHEN Type = 'Contract' THEN 1 ELSE 0 END) = 0 THEN 0
+            ELSE (CAST(SUM(CASE WHEN Type = 'Estimate' THEN 1 ELSE 0 END) AS FLOAT) / 
+                  SUM(CASE WHEN Type = 'Contract' THEN 1 ELSE 0 END)) * 100 
+        END, 2
+    ) || '%' AS Conversion
+FROM Documents d
+JOIN Employees e ON d.ResponsibleEmployee = e.ID
+GROUP BY Month, Employee
+ORDER BY Month, Employee;
+`;
+  const [query, setQuery] = useState(first_task);
   const [error, setError] = useState<string>("");
   const [results, setResults] = useState<QueryExecResult[]>([]);
 
@@ -28,34 +47,24 @@ function SqlQueryTool(props: SqlQueryToolProps) {
     }
   }, [db, query]);
 
-
   return (
-    <div className="grid grid-cols-2 w-full">
-      <div className="flex flex-col gap-2 justify-start items-start">
-        <h1 className="text-2xl font-semibold mb-4 text-left">SQL Query</h1>
-        <div className="w-full mb-4">
+    <div className={styles.grid}>
+      <h1 className={styles.title}>SQL Query</h1>
+      <div className={styles.flexContainer}>
+        <div className={styles.editorContainer}>
           <Editor
             value={query}
             onChange={(text) => setQuery(text!)}
-            width={800}
-            height="80vh"
             defaultLanguage="sql"
-            />
+          />
+          {error && <div className={styles.textRed}>{error}</div>}
+          <button className={styles.button} onClick={executeQuery}>
+            Execute Query
+          </button>
         </div>
-        {error.length > 0 && <div className=" text-red-600">{error}</div>}
-        <button
-          className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={executeQuery}
-        >
-          Execute Query
-        </button>
-
-      </div>
-
-
-      <div className="mt-4">
-        {/* Место для отображения таблицы */}
-        {JSON.stringify(results, null, 2)}
+        <div className={styles.tableContainer}>
+          <DynamicTable results={results} />
+        </div>
       </div>
     </div>
   );
